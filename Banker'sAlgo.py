@@ -57,31 +57,35 @@ def load_input():
     return Processes, Resources, max_matrix, available, allocated
 
 
+''' is_safe() function'''
+
+
+
 # method checks if the process requeset remains the system in safe state 
-def request_resources(pid ,processes,resources, request,available,need,allocated , max_matrix):
+def request_resources(pid ,processes,resources, release,available,need,allocated , max_matrix):
 
     #check if the id process is valid
     if pid <0 or pid>=processes:
         print(f"Invalid process ID P{pid}")
         return False
     
-    #check if the request length is available
-    if len(request)!=resources:
+    #check if the release length is available
+    if len(release)!=resources:
         print(f"equest must have exactly {resources} resource values")
         return False
     
-    #check if request in range of process needs
-    for p in range(len(request)):
-        if request[p]<0:
+    #check if release in range of process needs
+    for p in range(len(release)):
+        if release[p]<0:
             print("Invalid , Request values can not be negative")
             return False
-        if request[p]>need[pid][p]:
+        if release[p]>need[pid][p]:
             print (f"Request exceeds maximum need for P{pid}")
             return False
     
-    #check if the request in range of available processes
-    for p in range(len(request)):
-        if request[p]>available[p]:
+    #check if the release in range of available processes
+    for p in range(len(release)):
+        if release[p]>available[p]:
             print (f"Resources not available")
             return False
     
@@ -95,21 +99,48 @@ def request_resources(pid ,processes,resources, request,available,need,allocated
         need_copy.append(row[:])
     
     for p in range(resources):
-        available_copy[p]-=request[p]
-        need_copy[pid][p]-=request[p]
-        allocated_copy[pid][p]+=request[p]
+        available_copy[p]-=release[p]
+        need_copy[pid][p]-=release[p]
+        allocated_copy[pid][p]+=release[p]
 
     # check wether the system remians in safe state
     ''' call is_safe() '''
 
 '''
    if safe:
-        # Commit
         for p in range(resources):
             available[p]= available_copy[p]
             allocated[pid][p]= allocated_copy[pid][p]
             need[pid][p]= need_copy[pid][p]
         return True, seq
     else:
-        return False, "This request would lead to an unsafe state."
+        return False, "This release would lead to an unsafe state."
 '''
+
+
+def release_resources(pid ,processes,resources, release,available,need,allocated , max_matrix):
+    #check if the id process is valid
+    if pid <0 or pid>=processes:
+        print(f"Invalid process ID P{pid}")
+        return False
+    
+    #check if the release length is available
+    if len(release)!=resources:
+        print(f"release must have exactly {resources} resource values")
+        return False
+    
+    #check if release in range of process needs
+    for p in range(len(release)):
+        if release[p]<0:
+            print("Invalid: Release values can not be negative")
+            return False
+        if release[p]>need[pid][p]:
+            print (f"Invalid release: P{pid}"
+                   f"but tried to release {release}.")
+            return False
+    
+    for p in range(resources):
+        available[p]+=release[p]
+        allocated[pid][p]-=release[p]
+        need[pid][p]+=release[p]
+    return True
