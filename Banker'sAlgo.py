@@ -47,11 +47,11 @@ def load_input():
     i=0
     while i<len(lines):
         line=lines[i]
-        if line.startswith('N') and '=' in line:
+        if (line.startswith('N') and '=' in line ) or (line.startswith('n') and '=' in line):
             Processes=int(line.split("=")[1].strip())
-        elif line.startswith('M') and '=' in line and line != 'MAX':
+        elif (line.startswith('M') and '=' in line and line != 'MAX') or (line.startswith('m') and '=' in line and line != 'max'):
             Resources=int(line.split("=")[1].strip())
-        elif line == 'MAX':
+        elif line == 'MAX' or line=="max":
             i+=1
             while i < len(lines) and len(max_matrix) < Processes:
                 row=lines[i].split()
@@ -61,7 +61,7 @@ def load_input():
                 else:
                     break
             continue
-        elif line == 'AVAILABLE':
+        elif line == 'AVAILABLE' or line == 'available':
             i += 1
             row2=lines[i].split()
             available = list(map(int,row2))
@@ -82,8 +82,6 @@ def load_input():
         for j in range(Resources):
             row.append(max_matrix[i][j] - allocated[i][j])
         need.append(row)
-
-    print("cant read")
     return Processes, Resources, max_matrix, available, allocated ,need
 
 #=================== method that cheks if the system is safe or not ==============
@@ -120,29 +118,24 @@ def is_safe(process,resources,available,allocated,need):
 def request_resources(pid, processes, resources, request, available, need, allocated, max_matrix):
     #check process ID
     if pid < 0 or pid >= processes:
-        print(f"Invalid process ID P{pid}")
-        return False, []
+        return False, f"Invalid process ID P{pid}"
 
     #check request length
     if len(request) != resources:
-        print(f"Request must have exactly {resources} resource values")
-        return False, []
+        return False,f"Request must have exactly {resources} resource values"
 
     #check negative values and request <= need
     for r in range(resources):
         if request[r] < 0:
-            print("Invalid: Request values cannot be negative")
-            return False, []
+            return False,"Invalid: Request values cannot be negative"
 
         if request[r] > need[pid][r]:
-            print(f"Request denied: request exceeds maximum need for P{pid}")
-            return False, []
+            return False, f"Request denied: request exceeds maximum need for P{pid}"
 
     #check request <= available
     for r in range(resources):
         if request[r] > available[r]:
-            print("Request denied: resources are not available")
-            return False, []
+            return False, "Request denied: resources are not available"
 
     #temporarily allocate resources
     available_copy = available[:]
@@ -178,8 +171,8 @@ def request_resources(pid, processes, resources, request, available, need, alloc
         return True, safe_proc
 
     else:
-        print("Request denied: system would be in unsafe state.")
-        return False, []
+       
+        return False,"Request denied: system would be in unsafe state."
     
 
 
@@ -214,9 +207,8 @@ def release_resources(pid ,processes,resources, release,available,need,allocated
 
     return True,""
 
-#============method that simulate process execition in safe order
-def run_simulation( Processes, Resources, available, allocation, need):
-    safe, seq = is_safe( Processes, Resources, available, allocation, need)
+def run_simulation(Processes, Resources, available, allocation, need):
+    safe, seq = is_safe(Processes, Resources, available, allocation, need)
     if not safe:
         print("System is NOT in a safe state. Cannot run simulation.")
         return
@@ -237,22 +229,17 @@ def run_simulation( Processes, Resources, available, allocation, need):
     # Update real state
     for j in range(Resources):
         available[j] = avail_sim[j]
-    for i in range( Processes):
+    for i in range(Processes):
         for j in range(Resources):
             allocation[i][j] = alloc_sim[i][j]
-    
-    for i in range( Processes):
-        for j in range(Resources):
-            need[i][j]=0
-
+            need[i][j] = 0  
     print("\nAll processes completed successfully.")
-
 
 
 # ============ helpper function for reading rq and rl
 def RQ_RL(parts, Resources):
     """Parse 'RQ/RL <pid> r0 r1 ... rm-1' into (pid, [resources])."""
-    if len(parts) != 2 + Resources:
+    if len(parts) < 2 + Resources:
         return None, None, f"Expected: RQ/RL <process_id> followed by {Resources} resource values."
     try:
         pid = int(parts[1])
@@ -264,7 +251,6 @@ def RQ_RL(parts, Resources):
 
 # =========== main method ============
 def main():
-    print("Program loaded successfully")
     Processes, Num_Res, max_matrix, available, allocated ,need= load_input()
     print(f"\nBanker's Algorithm loaded: { Processes} processes, {Num_Res} resource types.")
     print("Commands: RQ <pid> <r...>  |  RL <pid> <r...>  |  *  |  RUN  |  EXIT\n")
@@ -325,3 +311,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
