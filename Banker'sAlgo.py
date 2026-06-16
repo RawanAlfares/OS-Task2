@@ -3,7 +3,7 @@ import sys
 from matplotlib import lines
 
 # method that read file 
-def load():
+def load_input():
     try:
         with open("input.txt", 'r') as f:
             lines = [line.strip() for line in f if line.strip()]
@@ -49,9 +49,67 @@ def load():
         sys.exit(1)
     
     # initialize allocated list by 0 
-    for i in range(Processes):
+    for _ in range(Processes):
         row=[]
-        for j in range(Resources):
+        for _ in range(Resources):
             row.append(0)
         allocated.append(row)
     return Processes, Resources, max_matrix, available, allocated
+
+
+# method checks if the process requeset remains the system in safe state 
+def request_resources(pid ,processes,resources, request,available,need,allocated , max_matrix):
+
+    #check if the id process is valid
+    if pid <0 or pid>=processes:
+        print(f"Invalid process ID P{pid}")
+        return False
+    
+    #check if the request length is available
+    if len(request)!=resources:
+        print(f"equest must have exactly {resources} resource values")
+        return False
+    
+    #check if request in range of process needs
+    for p in range(len(request)):
+        if request[p]<0:
+            print("Invalid , Request values can not be negative")
+            return False
+        if request[p]>need[pid][p]:
+            print (f"Request exceeds maximum need for P{pid}")
+            return False
+    
+    #check if the request in range of available processes
+    for p in range(len(request)):
+        if request[p]>available[p]:
+            print (f"Resources not available")
+            return False
+    
+    #Resources are temporarily allocated to the process to check whether the system remains in a safe state.    
+    available_copy=available[:]
+    allocated_copy=[]
+    need_copy=[]
+    for row in allocated:
+        allocated_copy.append(row[:])
+    for row in need:
+        need_copy.append(row[:])
+    
+    for p in range(resources):
+        available_copy[p]-=request[p]
+        need_copy[pid][p]-=request[p]
+        allocated_copy[pid][p]+=request[p]
+
+    # check wether the system remians in safe state
+    ''' call is_safe() '''
+
+'''
+   if safe:
+        # Commit
+        for p in range(resources):
+            available[p]= available_copy[p]
+            allocated[pid][p]= allocated_copy[pid][p]
+            need[pid][p]= need_copy[pid][p]
+        return True, seq
+    else:
+        return False, "This request would lead to an unsafe state."
+'''
